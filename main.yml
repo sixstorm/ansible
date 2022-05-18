@@ -1,0 +1,47 @@
+---
+- hosts: all
+  become: true
+
+  roles:
+    # Set Docker Role
+    - role: docker
+
+  tasks:
+    # Set Time Zone to America/Chicago
+    - name: Set Time Zone
+      timezone: 
+        name: America/Chicago
+
+    # Install latest Neovim
+    - name: Install Neovim PPA
+      ansible.builtin.apt_repository:
+        repo: ppa:neovim-ppa/stable
+        state: present
+
+    - name: Install Neovim
+      apt:
+        name: neovim
+        state: latest
+        update_cache: yes
+
+    - name: Download Dot Files from Git
+      git:
+        repo: https://github.com/sixstorm/dotfiles.git
+        dest: /home/"{{ username }}"/dotfiles
+        clone: yes
+        update: yes
+
+    - name: Create Neovim Directory
+      file:
+        path: /home/"{{ username }}"/.config/nvim
+        state: directory
+
+    - name: Copy init.vim
+      copy:
+        remote_src: yes
+        src: /home/"{{ username }}"/dotfiles/.config/nvim/init.vim
+        dest: /home/"{{ username }}"/.config/nvim
+
+    # - name: Install Neovim Plugged
+    #   ansible.builtin.command: sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+    #    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'

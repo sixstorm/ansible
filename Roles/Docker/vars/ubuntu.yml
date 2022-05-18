@@ -1,0 +1,16 @@
+---
+# Vars for Docker Tasks
+
+docker_deps:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - software-properties-common
+  - gnupg
+  - lsb-release
+
+docker_apps:
+  - docker
+  - docker-compose
+
+username: "user"

@@ -1,0 +1,38 @@
+---
+# Include Docker Variables
+- name: Include Docker Variables
+  include_vars: "ubuntu.yml"
+
+# Install Docker and Docker-Compose
+- name: Install required system packages
+  package:
+    name: '{{ docker_deps }}'
+    state: present
+    use: apt
+      
+- name: Add Docker GPG Apt Key
+  apt_key: 
+    url: 'https://download.docker.com/linux/ubuntu/gpg' 
+    state: present
+
+- name: Add Docker Repo
+  apt_repository: 
+    repo: 'deb https://download.docker.com/linux/ubuntu bionic stable' 
+    state: present
+
+- name: Update APT and Install Docker-CE
+  package:
+    name: '{{ docker_apps }}'
+    state: present
+    use: apt
+
+- name: Ensure Docker group exists
+  group:
+    name: docker
+    state: present
+
+- name: Add '{{ username }}' to Docker group
+  user:
+    name: '{{ username }}'
+    groups: docker
+    append: yes
