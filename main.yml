@@ -1,6 +1,13 @@
 ---
 - hosts: all
   become: true
+  # vars_prompt:
+    
+  #   # Ask for username
+  #   - name: username
+  #     prompt: What is your username?
+  #     private: no
+
 
   roles:
     # Set Docker Role
@@ -12,6 +19,17 @@
       timezone: 
         name: America/Chicago
 
+    # Install Updates
+    - name: Update Ubuntu
+      apt: 
+        update_cache: yes
+
+    - name: Install Git
+      apt:
+        name: git
+        state: latest
+        update_cache: no
+
     # Install latest Neovim
     - name: Install Neovim PPA
       ansible.builtin.apt_repository:
@@ -22,26 +40,30 @@
       apt:
         name: neovim
         state: latest
-        update_cache: yes
+        update_cache: no
 
     - name: Download Dot Files from Git
       git:
         repo: https://github.com/sixstorm/dotfiles.git
-        dest: /home/"{{ username }}"/dotfiles
+        dest: /home/{{ username }}/dotfiles
         clone: yes
         update: yes
 
     - name: Create Neovim Directory
       file:
-        path: /home/"{{ username }}"/.config/nvim
+        path: /home/{{ username }}/.config/nvim
         state: directory
 
     - name: Copy init.vim
       copy:
         remote_src: yes
-        src: /home/"{{ username }}"/dotfiles/.config/nvim/init.vim
-        dest: /home/"{{ username }}"/.config/nvim
+        src: /home/{{ username }}/dotfiles/.config/nvim/init.vim
+        dest: /home/{{ username }}/.config/nvim
 
-    # - name: Install Neovim Plugged
-    #   ansible.builtin.command: sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
-    #    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+    - name: Install Neovim Plugged
+      command: curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+      register: neovim_install
+
+    - name: Update/Install Neovim Plugins
+      command: nvim -c "PlugInstall" -c ":qa!"
+      register: neovim_plugin_install
